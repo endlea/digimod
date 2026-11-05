@@ -1,0 +1,25 @@
+# --- official firmware -----------------------------------------------------------------------------------------
+# Elektron's OS files are their copyright: everyone downloads their own from elektron.se.
+firmware/*.syx
+*.syx
+
+# --- generated -------------------------------------------------------------------------------------------------
+# Tools, the emulator, compiled DSPs, extracted firmwares, builds, emulator machines. All of it is rebuilt by
+# make setup / make up, and built firmwares are not ours to hand out without the base OS anyway.
+data/
+
+# --- work in progress ------------------------------------------------------------------------------------------
+# Mods still in development (shown with DIGIMOD_LAB=1) and private notes.
+lab/
+
+# --- local config ----------------------------------------------------------------------------------------------
+.env.local
+
+# --- python ----------------------------------------------------------------------------------------------------
+.venv/
+__pycache__/
+*.py[cod]
+.ruff_cache/
+
+# --- os --------------------------------------------------------------------------------------------------------
+.DS_Store

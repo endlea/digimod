@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>digimod</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>digimod</h1>
+  <span class="sub">custom Elektron firmware from mods · verified before you flash · try it in the emulator first</span>
+</header>
+<main>
+  <section class="card" id="fw-card">
+    <h2><span class="n">1</span> Base firmware</h2>
+    <div id="fw-list" class="list"></div>
+    <label class="add">+ Add an official OS .syx<input type="file" id="fw-add" accept=".syx" hidden></label>
+    <p class="hint">Official OS files from elektron.se go into <code>firmware/</code>. Only files the tool validates are accepted.</p>
+  </section>
+
+  <section class="card" id="mods-card">
+    <h2><span class="n">2</span> Mods</h2>
+    <div id="mod-list" class="list"></div>
+    <button id="build" class="primary">Build firmware</button>
+    <p class="hint" id="build-hint"></p>
+  </section>
+
+  <section class="card" id="builds-card">
+    <h2><span class="n">3</span> Builds</h2>
+    <div id="build-list" class="list"></div>
+  </section>
+
+  <section class="card wide" id="emu-card">
+    <h2><span class="n">4</span> Emulator</h2>
+    <div class="emu-bar">
+      <select id="emu-src"></select>
+      <button id="emu-start" class="primary">Start</button>
+      <button id="emu-stop">Stop</button>
+      <span id="emu-status" class="status"></span>
+      <a id="emu-open" target="_blank" hidden>open in a new tab ↗</a>
+    </div>
+    <div id="emu-view">
+      <iframe id="emu-frame" title="Digitakt II emulator" hidden></iframe>
+      <pre id="emu-log"></pre>
+    </div>
+  </section>
+</main>
+<footer>
+  Mods in the storage build on <a href="https://github.com/ElekLabs/digikit" target="_blank" rel="noopener">digikit by Em D - https://github.com/ElekLabs/digikit</a>
+  and on <a href="https://github.com/karigardarsson/digitakt-ii-research" target="_blank" rel="noopener">Kári Garðarsson's Digitakt II research</a>;
+  each mod's README names its authors and license. Not affiliated with Elektron. Official firmware is not included.
+</footer>
+<script src="app.js"></script>
+</body>
+</html>

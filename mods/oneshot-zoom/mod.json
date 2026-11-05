@@ -1,0 +1,51 @@
+{
+ "id": "oneshot-zoom",
+ "name": "One-Shot Zoom",
+ "version": "0.1",
+ "description": "ONESHOT SRC waveform zoom: press encoder C for 2x / 3.75x, turn it to pan (Kari Gardarsson's ONESHOT Zoom V11)",
+ "firmwares": [
+  {
+   "version": "1.16",
+   "main_os_sha256": "57bb4dfa8df07d846adc72fdb4fb0d3cd3c5680c524bf498338460207e008e7d"
+  }
+ ],
+ "patches": [
+  {
+   "section": 3,
+   "offset": "0x17dfe",
+   "from": "4e56ffcc48d71cfc",
+   "to": "4ef947ec10004e71"
+  },
+  {
+   "section": 3,
+   "offset": "0x180ea",
+   "from": "4e56ffcc48d73cfc",
+   "to": "4ef947ec109c4e71"
+  },
+  {
+   "section": 3,
+   "offset": "0x16c6a",
+   "from": "4eb94010eb84",
+   "to": "4eb947ec118a"
+  },
+  {
+   "section": 3,
+   "offset": "0x10e7a4",
+   "from": "4eb9401a0208",
+   "to": "4eb947ec13d4"
+  },
+  {
+   "section": 3,
+   "offset": "0x10e5f0",
+   "from": "42002f0a246f0008",
+   "to": "4ef947ec140e4e71"
+  }
+ ],
+ "segments": [
+  {
+   "dest": "0x47ec1000",
+   "file": "zoom.bin",
+   "bss": 0
+  }
+ ]
+}

@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: MIT
+---
+Language: Cpp
+BasedOnStyle: LLVM
+
+ColumnLimit: 100
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: true
+
+BreakBeforeBraces: Attach
+SpaceBeforeParens: ControlStatements
+PointerAlignment: Right
+AlignAfterOpenBracket: Align
+AlignEscapedNewlines: Left
+
+# The device/section name tables and the SHA-256 constants read far better as
+# aligned columns than as reflowed prose.
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveMacros: Consecutive
+AlignTrailingComments: true
+
+IndentCaseLabels: true
+SortIncludes: Never
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1

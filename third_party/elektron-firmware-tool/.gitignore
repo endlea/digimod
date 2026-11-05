@@ -1,0 +1,11 @@
+*.o
+*.d
+build/
+elektron-firmware-tool
+*.syx
+*.bin
+*.zip
+__pycache__/
+
+# Firmware is never committed -- see PROVENANCE.md.
+firmware/

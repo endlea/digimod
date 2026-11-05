@@ -1,0 +1,22 @@
+# The build service. The port is bound to 127.0.0.1: digimod has no login and no business on the LAN.
+
+services:
+  digimod:
+    build:
+      context: .
+      dockerfile: docker/digimod.dockerfile
+      args:
+        PYTHON_VERSION: ${PYTHON_VERSION:-3.12}
+    image: ${REG:-local}/${SRV:-digimod}:${VERSION:-dev}
+    ports:
+      - "127.0.0.1:${PORT:-8700}:8700"
+    volumes:
+      - ./firmware:/app/firmware      # official OS .syx files; the page can add more
+      - ./data:/app/data              # builds and extracted firmwares, shared with a native `make run`
+    init: true
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "2"

@@ -1,0 +1,14 @@
+# The image needs server/, web/, mods/, tests/ and two things from third_party/. firmware/ and data/ are mounted.
+.git
+.env.local
+.venv/
+data/
+firmware/
+lab/
+emulator/
+**/__pycache__/
+**/*.pyc
+.DS_Store
+third_party/digi2/
+third_party/dt2/patches/
+third_party/dt2/panel/

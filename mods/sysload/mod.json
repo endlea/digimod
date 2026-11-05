@@ -1,0 +1,51 @@
+{
+ "id": "sysload",
+ "name": "System Load",
+ "version": "0.3",
+ "description": "SETTINGS > SYSTEM > SYSTEM LOAD: the DSP's load and the voices playing, live, in STORAGE's style (now, average, peak, DSP cycles per frame)",
+ "firmwares": [
+  {
+   "version": "1.16",
+   "main_os_sha256": "57bb4dfa8df07d846adc72fdb4fb0d3cd3c5680c524bf498338460207e008e7d"
+  }
+ ],
+ "patches": [
+  {
+   "section": 3,
+   "offset": "0x109f9e",
+   "from": "4cef7c7c0008",
+   "to": "4ef947ec2000"
+  },
+  {
+   "section": 3,
+   "offset": "0x2252e8",
+   "from": "40154fe8",
+   "to": "47ec2072"
+  },
+  {
+   "section": 3,
+   "offset": "0x2252d8",
+   "from": "401e279c",
+   "to": "47ec2090"
+  },
+  {
+   "section": 3,
+   "offset": "0x2252dc",
+   "from": "401e2800",
+   "to": "47ec20a4"
+  },
+  {
+   "section": 3,
+   "offset": "0x225304",
+   "from": "4011acf2",
+   "to": "47ec2500"
+  }
+ ],
+ "segments": [
+  {
+   "dest": "0x47ec2000",
+   "file": "sysload.bin",
+   "bss": 24
+  }
+ ]
+}

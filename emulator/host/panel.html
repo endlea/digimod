@@ -1,0 +1,374 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Elektron</title>
+<style>
+:root { --bg: #111214; --panel: #17181b; --row: #1d1f23; --line: #2c2f35; --fg: #d4d8df; --dim: #8d97a5;
+        --accent: #e8b04a; --ok: #3ce66e; --bad: #ff5a46; --side: 340px; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 13px -apple-system, system-ui, sans-serif;
+             overflow: hidden; user-select: none; }
+#app { display: flex; height: 100%; }
+#stage { position: relative; flex: 1; min-width: 0; }
+#wrap { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+#panel { position: relative; width: 950px; height: 777px; overflow: hidden; border-radius: 10px; }
+#photo { position: absolute; pointer-events: none; }
+#scr { position: absolute; image-rendering: pixelated; }
+.key { position: absolute; border-radius: 7px; cursor: pointer; }
+.key:hover { outline: 1px solid rgba(232,240,255,.35); }
+.key.down { outline: 2px solid #e8f0ff; }
+.key.latched { outline: 2px solid #f5c542; }
+.glow { position: absolute; border-radius: 7px; pointer-events: none; mix-blend-mode: screen; }
+.enc { position: absolute; border-radius: 50%; cursor: ns-resize; touch-action: none; }
+.enc:hover { outline: 1px solid rgba(232,240,255,.3); }
+.page { position: absolute; border-radius: 50%; pointer-events: none; }
+#tick { position: absolute; pointer-events: none; border-radius: 3px; transform-origin: 50% 100%; }
+#vol { position: absolute; color: var(--accent); font-weight: 600; text-align: center; width: 90px; pointer-events: none;
+       transition: opacity .3s; }
+#bar { position: absolute; left: 0; right: 0; bottom: 0; height: 26px; display: flex; gap: 12px; align-items: center;
+       padding: 0 12px; color: var(--dim); font-size: 12px; }
+#bar .sp { margin-left: auto; }
+#rail { width: 34px; background: var(--panel); border-left: 1px solid var(--line); display: flex; flex-direction: column;
+        align-items: center; padding-top: 10px; gap: 6px; }
+.tab { writing-mode: vertical-rl; transform: rotate(180deg); padding: 12px 6px; border-radius: 6px; cursor: pointer;
+       color: var(--dim); font-weight: 600; letter-spacing: .08em; font-size: 11px; }
+.tab:hover { color: var(--fg); background: var(--row); }
+.tab.on { color: #111; background: var(--accent); }
+#side { width: var(--side); background: var(--panel); border-left: 1px solid var(--line); display: none; flex-direction: column; }
+#side.open { display: flex; }
+.pane { display: none; flex: 1; flex-direction: column; min-height: 0; }
+.pane.on { display: flex; }
+.head { padding: 12px 14px 8px; border-bottom: 1px solid var(--line); }
+.head h3 { margin: 0 0 6px; font-size: 13px; letter-spacing: .06em; color: var(--accent); }
+.crumbs { color: var(--dim); font-size: 12px; word-break: break-all; }
+.crumbs span { cursor: pointer; color: var(--fg); }
+.crumbs span:hover { color: var(--accent); }
+.tools { display: flex; gap: 6px; margin-top: 8px; }
+button { background: #2a2c31; color: var(--fg); border: 1px solid #3c4048; border-radius: 6px; padding: 5px 10px;
+         cursor: pointer; font: inherit; }
+button:hover:not(:disabled) { border-color: var(--accent); }
+button:disabled { opacity: .4; cursor: default; }
+.list { flex: 1; overflow-y: auto; padding: 4px 0; }
+.item { display: flex; align-items: center; gap: 8px; padding: 6px 14px; cursor: default; }
+.item:hover { background: var(--row); }
+.item .ic { width: 16px; text-align: center; color: var(--dim); }
+.item .nm { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item.dir .nm { cursor: pointer; }
+.item .sz { color: var(--dim); font-size: 11px; font-variant-numeric: tabular-nums; }
+.item .del { visibility: hidden; color: var(--dim); cursor: pointer; padding: 0 4px; }
+.item:hover .del { visibility: visible; }
+.item .del:hover { color: var(--bad); }
+.drop { margin: 8px 14px 12px; border: 1px dashed #3c4048; border-radius: 8px; padding: 12px; text-align: center;
+        color: var(--dim); font-size: 12px; }
+.drop.hot { border-color: var(--accent); color: var(--accent); background: rgba(232,176,74,.06); }
+.log { padding: 0 14px 10px; font-size: 12px; max-height: 120px; overflow-y: auto; }
+.log div { padding: 2px 0; color: var(--dim); }
+.log .ok { color: var(--ok); } .log .bad { color: var(--bad); }
+.note { padding: 10px 14px; color: var(--dim); font-size: 12px; line-height: 1.45; border-top: 1px solid var(--line); }
+.sw { display: flex; align-items: center; gap: 10px; padding: 8px 14px; }
+.sw .nm { flex: 1; }
+.toggle { width: 34px; height: 18px; border-radius: 9px; background: #3a3d44; position: relative; cursor: pointer; flex: none; }
+.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%;
+                 background: #cfd3da; transition: left .15s; }
+.toggle.on { background: var(--accent); } .toggle.on::after { left: 18px; }
+.act { padding: 10px 14px; display: flex; align-items: center; gap: 8px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: #3a3d44; flex: none; }
+.dot.on { background: var(--ok); box-shadow: 0 0 6px var(--ok); }
+</style></head>
+<body>
+<div id="app">
+  <div id="stage">
+    <div id="wrap"><div id="panel">
+      <img id="photo" src="/panel/photo.png">
+      <canvas id="scr" width="128" height="64"></canvas>
+      <div id="tick"></div><div id="vol"></div>
+    </div></div>
+    <div id="bar"><span id="st"></span><span class="sp">click = press · FUNC/TRK latch · drag or wheel on a knob = turn (fast drag = coarse, Shift = ×10) · click a knob = push</span></div>
+  </div>
+  <div id="side">
+    <div class="pane" id="p-drive">
+      <div class="head"><h3>+DRIVE</h3><div class="crumbs" id="crumbs"></div>
+        <div class="tools"><button id="up">↑ Up</button><button id="mk">+ Folder</button><button id="addf">Add samples…</button>
+          <button id="rf" title="Refresh">↻</button></div></div>
+      <div class="list" id="files"></div>
+      <div class="drop" id="drop">Drop audio files here (WAV, AIFF, MP3, M4A, FLAC…)</div>
+      <div class="log" id="log"></div>
+      <div class="note">Files land in the folder shown (from the root: <b>/incoming</b>). On the machine: <b>Samples</b> → +DRIVE → the file →
+        LOAD TO TRK, as on the hardware. <b>/factory</b> is read-only.</div>
+      <input type="file" id="pick" multiple accept="audio/*,.wav,.aif,.aiff,.mp3,.m4a,.flac,.caf" style="display:none">
+    </div>
+    <div class="pane" id="p-midi">
+      <div class="head"><h3>MIDI IN</h3><div class="crumbs">MIDI sources on this Mac → the machine's MIDI IN</div></div>
+      <div id="inputs"></div>
+      <div class="act"><span class="dot" id="mdot"></span><span id="mlast">no events yet</span></div>
+      <div class="note">Notes reach the track whose MIDI channel matches (on the machine: SETTINGS → MIDI CONFIG → CHANNELS;
+        the AUTO channel plays the active track). Clock and transport follow MIDI CONFIG → SYNC.</div>
+    </div>
+  </div>
+  <div id="rail"><div class="tab" data-p="drive" id="t-drive">+DRIVE</div><div class="tab" data-p="midi">MIDI</div></div>
+</div>
+<script>
+const P = document.getElementById('panel');
+let L, ver = -1, master = 0.25, scale = 1, info = {};
+const post = (kind, code, arg = 0) => fetch('/panel_input', {method: 'POST', body: JSON.stringify({kind, code, arg})});
+const $ = id => document.getElementById(id);
+function box(el, x, y, w, h) { Object.assign(el.style, {left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px'}); }
+
+// ------------------------------------------------------------------ layout
+function fit() {
+  const st = $('stage'), W = st.clientWidth, H = st.clientHeight - 26;
+  scale = Math.min(W / 970, H / 797);
+  const w = $('wrap');
+  w.style.transform = `translate(${(W - 950 * scale) / 2}px, ${(H - 777 * scale) / 2}px) scale(${scale})`;
+}
+addEventListener('resize', fit);
+function openPane(p) {
+  const side = $('side'), cur = side.dataset.p;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.p === p && cur !== p));
+  if (cur === p) { side.classList.remove('open'); side.dataset.p = ''; }
+  else {
+    side.classList.add('open'); side.dataset.p = p;
+    document.querySelectorAll('.pane').forEach(e => e.classList.toggle('on', e.id === 'p-' + p));
+    if (p === 'drive') drive.load(drive.path); else midi.load();
+  }
+  setTimeout(fit, 0);
+}
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => openPane(t.dataset.p));
+
+// ------------------------------------------------------------------ panel
+// dt2's interaction (vst/DigitaktUI.cpp): a step per drag_px of vertical drag, x fast_gain above
+// fast_speed px/ms; the wheel: up to wheel_clamp notches x wheel_gain, Shift x shift_mult
+function encoder(el, onSteps, onClick, wheelSteps) {
+  let y0, t0, acc, moved;
+  el.onpointerdown = e => {
+    e.preventDefault(); el.setPointerCapture(e.pointerId);
+    y0 = e.clientY / scale; t0 = performance.now(); acc = 0; moved = false;
+  };
+  el.onpointermove = e => {
+    if (!el.hasPointerCapture(e.pointerId)) return;
+    const y = e.clientY / scale, t = performance.now(), dy = y0 - y;
+    const speed = Math.abs(dy) / Math.max(1, t - t0), I = L.interaction;
+    acc += dy / I.drag_px * (speed > I.fast_speed ? I.fast_gain : 1) * (e.shiftKey ? I.shift_mult : 1);
+    const steps = Math.trunc(acc);
+    if (steps) { acc -= steps; moved = true; onSteps(Math.max(-I.turn_clamp, Math.min(I.turn_clamp, steps))); }
+    if (dy) moved = moved || Math.abs(dy) > 0.5;
+    y0 = y; t0 = t;
+  };
+  el.onpointerup = e => { el.releasePointerCapture(e.pointerId); if (!moved && onClick) onClick(); };
+  let wacc = 0;
+  el.onwheel = e => {
+    e.preventDefault();
+    const I = L.interaction, d = -(e.deltaY || e.deltaX);            // Shift+wheel arrives as deltaX
+    wacc += e.deltaMode === 1 ? d / 3 : d / 100;                       // lines or pixels -> notches (a mouse notch ~100 px)
+    let n = Math.trunc(wacc);
+    if (!n) return;
+    wacc -= n;
+    if (wheelSteps) return onSteps(Math.sign(n) * wheelSteps);         // Main Volume: dt2's volumeBy(±wheel_gain)
+    n = Math.max(-I.wheel_clamp, Math.min(I.wheel_clamp, n)) * I.wheel_gain * (e.shiftKey ? I.shift_mult : 1);
+    onSteps(Math.max(-I.turn_clamp, Math.min(I.turn_clamp, n)));
+  };
+}
+
+async function init() {
+  L = await (await fetch('/panel/layout.json')).json();
+  info = await (await fetch('/state')).json();
+  document.title = info.device; master = info.master ?? 0.25;
+  if (!info.drive) $('t-drive').style.display = 'none';
+  const ph = L.photo || {size: L.panel, view: [0, 0]};           // digi2 crops a larger photo, dt2's is the panel
+  box($('photo'), -ph.view[0], -ph.view[1], ph.size[0], ph.size[1]);
+  const [sx, sy] = L.screen.xy, [sw, sh] = L.screen.wh;
+  box($('scr'), sx, sy, sw, sh);
+  L.keyEls = {};
+  for (const [code, [cx, cy, w, h]] of Object.entries(L.keys)) {   // key rects are centre + size
+    const x = cx - w / 2, y = cy - h / 2;
+    const g = document.createElement('div'); g.className = 'glow'; box(g, x, y, w, h); P.appendChild(g);
+    const k = document.createElement('div'); k.className = 'key'; box(k, x, y, w, h); P.appendChild(k);
+    L.keyEls[code] = {k, g};
+    const latching = L.interaction.latching.includes(+code);
+    if (!latching) k.title = 'Shift+click: hold the key (a click releases it), e.g. REC held + PLAY = live recording';
+    k.onmousedown = e => {
+      e.preventDefault();
+      if (latching || e.shiftKey || k.classList.contains('latched')) {   // Shift+click holds any key
+        const on = !k.classList.contains('latched'); k.classList.toggle('latched', on); post(on ? 0 : 1, +code); return;
+      }
+      k.classList.add('down'); post(0, +code);
+      const t0 = performance.now();
+      const up = () => {                       // held at least auto_release_ms, or the OS's key scan misses it
+        removeEventListener('mouseup', up);
+        setTimeout(() => { k.classList.remove('down'); post(1, +code); },
+                   Math.max(0, L.interaction.auto_release_ms - (performance.now() - t0)));
+      };
+      addEventListener('mouseup', up);
+    };
+  }
+  for (const e of L.encoders) {
+    const [x, y, r] = e.xyr, el = document.createElement('div');
+    el.className = 'enc'; box(el, x - r, y - r, 2 * r, 2 * r); P.appendChild(el);
+    encoder(el, n => post(3, e.turn, n), () => { post(0, e.push); setTimeout(() => post(1, e.push), L.interaction.auto_release_ms); });
+  }
+  // Main Volume: the engine's master gain, with dt2's tick on the knob
+  const MV = L.main_volume, [vx, vy, vr] = MV.xyr, vol = document.createElement('div');
+  vol.className = 'enc'; box(vol, vx - vr, vy - vr, 2 * vr, 2 * vr); P.appendChild(vol);
+  const tick = $('tick'), len = vr * (MV.tick_r[1] - MV.tick_r[0]);
+  box(tick, vx - MV.tick_width / 2, vy - vr * MV.tick_r[1], MV.tick_width, len);
+  tick.style.background = MV.tick; tick.style.transformOrigin = `50% ${vr * MV.tick_r[1]}px`;
+  const vt = $('vol'); box(vt, vx - 45, vy + vr + MV.text_dy - 30, 90, 16);
+  let hideT = 0;
+  const drawVol = show => {
+    tick.style.transform = `rotate(${MV.angle[0] + MV.angle[1] * Math.min(1, master / MV.max)}deg)`;
+    if (show) { vt.textContent = 'vol ' + Math.round(master / MV.max * 100) + '%'; vt.style.opacity = 1;
+                clearTimeout(hideT); hideT = setTimeout(() => vt.style.opacity = 0, MV.hide_ms); }
+  };
+  let saveT = 0;
+  encoder(vol, n => {
+    master = Math.max(0, Math.min(MV.max, master + L.interaction.volume_step * n)); drawVol(true);
+    clearTimeout(saveT); saveT = setTimeout(() => fetch('/master', {method: 'POST', body: JSON.stringify({master})}), 30);
+  }, null, L.interaction.wheel_gain);
+  drawVol(false);
+  L.pageEls = L.page_leds.xy.map(([x, y]) => {
+    const d = document.createElement('div'); d.className = 'page';
+    box(d, x - L.page_leds.size / 2, y - L.page_leds.size / 2, L.page_leds.size, L.page_leds.size); P.appendChild(d); return d;
+  });
+  fit(); poll();
+}
+
+function brightness(v) { const hi = v >> 4, lo = v & 15; return hi > 0 ? Math.min(1, hi / 7) : (lo <= 1 ? 0 : 0.15 * lo / 15 + 0.05); }
+const ctx = $('scr').getContext('2d'), img = ctx.createImageData(128, 64);
+async function poll() {
+  try {
+    const r = await fetch('/panel/frame?since=' + ver);
+    if (r.status === 200) {
+      ver = +r.headers.get('X-Frame');
+      const b = new Uint8Array(await r.arrayBuffer()), on = [232, 246, 255], off = [12, 14, 18];
+      for (let i = 0; i < 8192; i++) {
+        const a = b[i] ? 1 : 0;
+        for (let c = 0; c < 3; c++) img.data[4 * i + c] = off[c] + (on[c] - off[c]) * a;
+        img.data[4 * i + 3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+      const leds = b.subarray(8192);
+      for (const [led, code] of Object.entries(L.led_to_control)) {
+        const e = L.keyEls[code]; if (!e) continue;
+        const lv = brightness(leds[+led]), col = L.led_color[code] || L.led_default;
+        e.g.style.background = lv > 0 ? col : 'transparent';
+        e.g.style.opacity = lv * 0.55; e.g.style.boxShadow = lv > 0 ? `0 0 ${6 + 10 * lv}px ${col}` : 'none';
+      }
+      L.page_leds.leds.forEach((idx, i) => {
+        const v = leds[idx], lv = (v >> 4) ? 1 : ((v & 15) > 1 ? 0.3 : 0), d = L.pageEls[i];
+        d.style.background = lv ? L.led_default : 'transparent'; d.style.opacity = lv;
+        d.style.boxShadow = lv ? `0 0 8px ${L.led_default}` : 'none';
+      });
+    }
+  } catch (e) {}
+  setTimeout(poll, 25);
+}
+setInterval(async () => {
+  try {
+    const s = await (await fetch('/state')).json();
+    $('st').textContent = `${s.device} · ${s.status} · ${Math.round(s.rate / 100) / 10} kHz · underruns ${s.underruns}`;
+  } catch (e) { $('st').textContent = 'engine not reachable'; }
+}, 1000);
+
+// ------------------------------------------------------------------ +DRIVE
+const drive = {
+  path: '/incoming',
+  readOnly(p) { return p === '/factory' || p.startsWith('/factory/'); },
+  async load(p) {
+    const r = await (await fetch('/drive?path=' + encodeURIComponent(p))).json();
+    this.path = r.path;
+    const parts = r.path.split('/').filter(Boolean), c = $('crumbs');
+    c.innerHTML = '';
+    const add = (label, to) => { const s = document.createElement('span'); s.textContent = label; s.onclick = () => drive.load(to); c.appendChild(s); };
+    add('/', '/');
+    parts.forEach((x, i) => { if (i) c.append(' / '); add(x, '/' + parts.slice(0, i + 1).join('/')); });
+    const ro = this.readOnly(r.path);
+    $('mk').disabled = ro || r.path === '/'; $('addf').disabled = ro; $('up').disabled = r.path === '/';
+    $('drop').style.display = ro ? 'none' : '';
+    const list = $('files'); list.innerHTML = '';
+    if (r.error) { list.innerHTML = `<div class="item"><span class="nm" style="color:var(--bad)">${r.error}</span></div>`; return; }
+    if (!r.entries.length) list.innerHTML = '<div class="item"><span class="nm" style="color:var(--dim)">empty</span></div>';
+    for (const e of r.entries) {
+      const row = document.createElement('div'); row.className = 'item' + (e.dir ? ' dir' : '');
+      const full = (r.path === '/' ? '' : r.path) + '/' + e.name;
+      row.innerHTML = `<span class="ic">${e.dir ? '▸' : '♪'}</span><span class="nm"></span>` +
+        `<span class="sz">${e.dir ? '' : (e.size / 1024).toFixed(0) + ' KB'}</span>` +
+        (e.protected || ro ? '' : '<span class="del" title="Delete">✕</span>');
+      row.querySelector('.nm').textContent = e.name;
+      if (e.dir) row.querySelector('.nm').onclick = () => drive.load(full);
+      const del = row.querySelector('.del');
+      if (del) del.onclick = async () => {
+        if (!confirm(`Delete ${full}${e.dir ? ' (must be empty)' : ''}?`)) return;
+        const x = await fetch('/drive/rm', {method: 'POST', body: JSON.stringify({path: full, dir: e.dir})});
+        if (!x.ok) say((await x.json()).error, 'bad');
+        drive.load(drive.path);
+      };
+      list.appendChild(row);
+    }
+  },
+  async upload(files) {
+    const dest = this.path === '/' ? '/incoming' : this.path;
+    for (const f of files) {
+      say(`${f.name} → ${dest} …`);
+      const r = await fetch(`/drive/upload?dir=${encodeURIComponent(dest)}&name=${encodeURIComponent(f.name)}`,
+                            {method: 'POST', body: await f.arrayBuffer()});
+      const j = await r.json();
+      say(r.ok ? `${f.name} → ${j.path}` : `${f.name}: ${j.error}`, r.ok ? 'ok' : 'bad');
+    }
+    this.load(dest);
+  },
+};
+function say(t, cls) { const d = document.createElement('div'); d.textContent = t; if (cls) d.className = cls; $('log').prepend(d); }
+$('up').onclick = () => { const p = drive.path.split('/').filter(Boolean); p.pop(); drive.load('/' + p.join('/')); };
+$('rf').onclick = () => drive.load(drive.path);
+$('mk').onclick = async () => {
+  const n = prompt('New folder name'); if (!n) return;
+  const r = await fetch('/drive/mkdir', {method: 'POST', body: JSON.stringify({path: (drive.path === '/' ? '' : drive.path) + '/' + n})});
+  if (!r.ok) say((await r.json()).error, 'bad');
+  drive.load(drive.path);
+};
+$('addf').onclick = () => $('pick').click();
+$('pick').onchange = e => { drive.upload([...e.target.files]); e.target.value = ''; };
+const drop = $('drop'), side = $('side');
+side.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('hot'); });
+side.addEventListener('dragleave', e => { if (!side.contains(e.relatedTarget)) drop.classList.remove('hot'); });
+side.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('hot');
+  if (!drive.readOnly(drive.path)) drive.upload([...e.dataTransfer.files]); });
+addEventListener('dragover', e => e.preventDefault());           // a file dropped elsewhere must not open in the window
+// a file dropped outside the side menu opens +DRIVE (never closes it: a drop on the menu bubbles here too)
+addEventListener('drop', e => { e.preventDefault(); if (info.drive && $('side').dataset.p !== 'drive') openPane('drive'); });
+
+// ------------------------------------------------------------------ MIDI
+const NOTE = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+function describe([s, a, b]) {
+  const ch = (s & 15) + 1, t = s >> 4;
+  if (t === 9 && b) return `ch ${ch} · note on ${NOTE[a % 12]}${Math.floor(a / 12) - 1} · vel ${b}`;
+  if (t === 8 || t === 9) return `ch ${ch} · note off ${NOTE[a % 12]}${Math.floor(a / 12) - 1}`;
+  if (t === 11) return `ch ${ch} · CC ${a} = ${b}`;
+  if (t === 14) return `ch ${ch} · pitch bend`;
+  if (t === 12) return `ch ${ch} · program ${a + 1}`;
+  return `status ${s.toString(16)}`;
+}
+const midi = {
+  events: -1,
+  async load() {
+    const m = await (await fetch('/midi')).json(), box = $('inputs');
+    box.innerHTML = m.inputs.length ? '' : '<div class="sw"><span class="nm" style="color:var(--dim)">no MIDI sources found</span></div>';
+    for (const i of m.inputs) {
+      const row = document.createElement('div'); row.className = 'sw';
+      row.innerHTML = '<span class="nm"></span><span class="toggle"></span>';
+      row.querySelector('.nm').textContent = i.name;
+      const t = row.querySelector('.toggle'); t.classList.toggle('on', i.on);
+      t.onclick = async () => { await fetch('/midi', {method: 'POST', body: JSON.stringify({name: i.name, on: !i.on})}); midi.load(); };
+      box.appendChild(row);
+    }
+    this.show(m);
+  },
+  show(m) {
+    const live = m.events !== this.events && this.events >= 0;
+    $('mdot').classList.toggle('on', live);
+    if (m.events > 0) $('mlast').textContent = `${describe(m.last)} · ${m.events} events`;
+    this.events = m.events;
+  },
+};
+setInterval(async () => { if ($('side').dataset.p === 'midi') midi.show(await (await fetch('/midi')).json()); }, 250);
+
+init();
+</script></body></html>
