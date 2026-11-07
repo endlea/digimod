@@ -1,4 +1,4 @@
-# Polyphony (Digitakt II OS 1.16), v0.1.8
+# Polyphony (Digitakt II OS 1.16), v0.2.0
 
 Polyphony as a per-track setting, the way Digitone II does it. A track with VOICES above 1 plays chords: it borrows
 the DSP channels of tracks that are not playing anything, starting from track 16 and going down.
@@ -26,6 +26,34 @@ channels: the selected track inverted, the channels it plays on framed, busy tra
   ~0.1 s of each other land on the first note's step. On playback each note goes to its own voice; parameter locks
   apply to the whole chord. On the stock OS such a trig plays its first note.
 
+## Chords on the TRIG page
+
+On a track with VOICES above 1:
+
+- **Holding a trig** that carries a chord shows it in the TRIG page's NOTE cell: the root (/ bass for an inversion)
+  and the name: `MAJ`, `MIN7`, `MAJ9`, `7#9`, `SUS4`, `HDIM`, `MAJ7#11`…
+- **Holding a trig and pressing encoder A** (NOTE) opens the chord editor for that step: the chord on a keyboard
+  drawn like the OS draws a MIDI trig's chord, its full name, and one column per encoder.
+
+![The chord editor: CMAJ9 on step 5 of a track with VOICES 6, N5 just added, N7 and N8 locked](chord-editor.png)
+
+*The chord editor in the emulator: CMAJ9 on a track with VOICES 6. N5 was just added, N6 is free, N7 and N8 are
+beyond VOICES and locked.*
+
+| In the chord editor | |
+|---|---|
+| encoders A…H | notes N1…N8, a semitone a step; with FUNC held, an octave. Turning a `--` adds the note |
+| pressing B…H | adds that note (a third above the highest) or removes it; N1 is the trig's own note |
+| ← / → | the whole chord a semitone |
+| ↑ / ↓ | the whole chord an octave |
+| NO, encoder A again, letting go of the trig | close (FUNC does not) |
+
+The keyboard shows two octaves and follows the note you move; small arrows mark notes beyond its edges, and it
+starts from the lowest note each time the editor opens. Notes beyond VOICES are locked (striped). Every change is
+written to the step at once, the way the OS writes a MIDI trig's notes, so copy, paste, clear and saving work as
+for any trig. Lowering VOICES drops the notes beyond it from the track's trigs in the pattern playing; in other
+patterns those notes are not played. Tracks with one voice look and work as stock.
+
 ## Which channels a track borrows
 
 A track with VOICES = N plays on its own channel plus N−1 others, taken from track 16 downward. A track lends its
@@ -34,7 +62,6 @@ channel when it is not polyphonic itself, not already lent, and:
 - it has no trigs in the pattern while the sequencer runs (when stopped every track is free, so live playing takes
   voices from 16 down even with a full pattern);
 - or it is muted (or not soloed): it lends its channel regardless of trigs;
-- or it is a MIDI track: its notes go out over MIDI, it never uses its DSP channel;
 - and it has not played its own notes from the keys or MIDI in the last few seconds.
 
 When a lending track plays a note of its own it takes its channel back right away and the polyphonic track moves to
@@ -46,7 +73,7 @@ otherwise the oldest one is stolen. Sequencer trigs rotate over the voices, so o
 ## Where it stays mono
 
 MIDI tracks (they have their own chords), and tracks on REPITCH, GRID or SLICE, where voices do not work correctly
-yet. Their channels can still be lent. The VOICES value is remembered and comes back when the track goes back to
+yet. REPITCH, GRID and SLICE tracks can still lend their channels; MIDI tracks never do. The VOICES value is remembered and comes back when the track goes back to
 ONESHOT, STRETCH, WERP or PLAITS (from the Plaits mod).
 
 ## How it works
@@ -79,8 +106,9 @@ ONESHOT, STRETCH, WERP or PLAITS (from the Plaits mod).
 
 ## Status
 
-- v0.1 was checked on hardware; v0.1.3 is part of the builds that have run on hardware since. v0.1.4 to v0.1.8 are
-  checked in the emulator only.
+- v0.1 was checked on hardware; v0.1.3 is part of the builds that have run on hardware since. The voice fixes of
+  v0.2.0 were checked on hardware; the chord editor so far in the emulator (8-note chords, VOICES 8 → 6, copy and
+  paste, clear, pattern changes, saving and loading back, ← / → and FUNC in the editor).
 - Checked in the emulator with the real DSP: chords recorded live and played back on borrowed channels, trig locks
   on 3-voice chords, save / load / new project, ONESHOT, STRETCH and WERP voices at the same level as mono.
 - v0.1.4 in the emulator: a pattern with locked trigs on every step, VOICES 3 (the notes rotate over channels 4, 10
@@ -90,12 +118,26 @@ ONESHOT, STRETCH, WERP or PLAITS (from the Plaits mod).
 ## Limits
 
 - REPITCH, GRID and SLICE stay mono for now.
-- Up to 4 notes per recorded chord (Note 1–4); live playing can use up to 8 voices.
+- Live recording stores up to 4 notes per trig (Note 1–4); the chord editor and live playing go up to 8.
 - With trigs on every track of a playing pattern there are no free channels, and the track plays one note.
-- Chord notes 2–4 cannot be edited on the trig page (an audio track only shows NOTE there); record them live.
 
 ## History
 
+- **0.2.0** — chords on the TRIG page and the voice fixes found on hardware since 0.1.8:
+  - the NOTE cell shows a held trig's chord by name (sevenths, extensions, alterations, inversions);
+  - the chord editor (hold a trig, press encoder A): up to 8 notes on the eight encoders, FUNC + turn an octave,
+    ← / → and ↑ / ↓ move the whole chord, a keyboard drawn in the OS's MIDI-chord style. Notes are written with
+    `FUN_400392be` on the active pattern's NotePool, so copy, paste, clear, pattern changes and saving (also across
+    a power cycle) keep them. The TRIG page's encoders are hooked in their code (`0x4007375a`), its keys, drawing
+    and NOTE cell through its vtable (`0x401f90d8`, `0x401f90e0`, `0x401f9184`), and its parent's keys
+    (`0x401f8c74`) so ← / → reach the editor instead of opening MICRO TIMING;
+  - notes beyond VOICES are locked in the editor, dropped from the pattern when VOICES goes down, and never played;
+  - every voice sounds: with VOICES n only n − 1 did. The OS sets a channel's lock mask only for a sequencer note
+    that carries a lock list; other notes kept the mask of whatever played there before, and the voice played the
+    lending track's sample or nothing. The mask is now read only for a channel whose note came with locks;
+  - MIDI tracks no longer lend their channels (their notes go out over MIDI, so one voice was silent);
+  - a sequencer note no longer takes a voice from a note held on the keys or MIDI (the sequencer posts notes ~0.17 s
+    ahead, and the held note was cut early).
 - **0.1.8** — tells System Load which channels sound: the DSP runs the voice and its note is held, or was released
   less than a second ago. Kept for every channel, polyphonic or not, at `0x47fdfff8` ("VOIC", then a bit per
   channel).
