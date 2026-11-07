@@ -1,8 +1,8 @@
 {
  "id": "polyphony",
  "name": "Polyphony",
- "version": "0.1.8",
- "description": "VOICES per track (FUNC + SAMPLES, twice): a track borrows the channels of tracks without trigs, from track 16 down; chords of up to 4 notes record and play in the sequencer; saved with the project",
+ "version": "0.2.0",
+ "description": "VOICES per track (FUNC + SAMPLES, twice): a track borrows the channels of tracks without trigs, from track 16 down; chords in the sequencer, up to 8 notes per trig with the chord editor on the TRIG page (hold a trig, press encoder A); saved with the project",
  "firmwares": [
   {
    "version": "1.16",
@@ -62,74 +62,104 @@
    "section": 3,
    "offset": "0x1ee88",
    "from": "4feffff02f0a",
-   "to": "4ef947f00064"
+   "to": "4ef947f00078"
   },
   {
    "section": 3,
    "offset": "0x11ee9c",
    "from": "2f02243944e08670",
-   "to": "4ef947f000764e71"
+   "to": "4ef947f0008a4e71"
   },
   {
    "section": 3,
    "offset": "0xcd326",
    "from": "202f00040680",
-   "to": "4ef947f0009c"
+   "to": "4ef947f000b0"
   },
   {
    "section": 3,
    "offset": "0xcd346",
    "from": "202f00040680",
-   "to": "4ef947f000b4"
+   "to": "4ef947f000c8"
   },
   {
    "section": 3,
    "offset": "0xcd364",
    "from": "202f00040680",
-   "to": "4ef947f000cc"
+   "to": "4ef947f000e0"
   },
   {
    "section": 3,
    "offset": "0xdb866",
    "from": "4fefffe448d73c1c",
-   "to": "4ef947f000e44e71"
+   "to": "4ef947f000f84e71"
   },
   {
    "section": 3,
    "offset": "0xdb334",
    "from": "4fefffe048d77c1c",
-   "to": "4ef947f000f84e71"
+   "to": "4ef947f0010c4e71"
   },
   {
    "section": 3,
    "offset": "0xe5aee",
    "from": "4fefffec48d70c1c",
-   "to": "4ef947f0010c4e71"
+   "to": "4ef947f001204e71"
   },
   {
    "section": 3,
    "offset": "0x2ddd0",
    "from": "202eff80e4a0c081",
-   "to": "4eb947f0008a4e71"
+   "to": "4eb947f0009e4e71"
   },
   {
    "section": 3,
    "offset": "0x48c5a",
    "from": "4003630c",
-   "to": "47f00734"
+   "to": "47f00772"
   },
   {
    "section": 3,
    "offset": "0x3095c",
    "from": "4003630c",
-   "to": "47f00734"
+   "to": "47f00772"
+  },
+  {
+   "section": 3,
+   "offset": "0x1f8d84",
+   "from": "40069b8e",
+   "to": "47f01fb0"
+  },
+  {
+   "section": 3,
+   "offset": "0x1f8cd8",
+   "from": "4007302c",
+   "to": "47f022a2"
+  },
+  {
+   "section": 3,
+   "offset": "0x7335a",
+   "from": "4e56ffe848d7041c",
+   "to": "4ef947f000644e71"
+  },
+  {
+   "section": 3,
+   "offset": "0x1f8874",
+   "from": "40070c00",
+   "to": "47f02572"
+  },
+  {
+   "section": 3,
+   "offset": "0x1f8ce0",
+   "from": "40073264",
+   "to": "47f026d2"
   }
  ],
  "segments": [
   {
    "dest": "0x47f00000",
    "file": "poly.bin",
-   "bss": 2232
+   "bss": 2304
   }
  ]
 }
